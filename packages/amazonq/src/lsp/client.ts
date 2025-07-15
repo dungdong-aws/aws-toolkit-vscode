@@ -169,6 +169,7 @@ export async function startLanguageServer(
                         reroute: true,
                         modelSelection: true,
                         workspaceFilePath: vscode.workspace.workspaceFile?.fsPath,
+                        qCodeReviewInChat: true,
                     },
                     window: {
                         notifications: true,
@@ -176,7 +177,7 @@ export async function startLanguageServer(
                     },
                     textDocument: {
                         inlineCompletionWithReferences: {
-                            inlineEditSupport: Experiments.instance.isExperimentEnabled('amazonqLSPNEP'),
+                            inlineEditSupport: Experiments.instance.get('amazonqLSPNEP', true),
                         },
                     },
                 },
@@ -278,6 +279,14 @@ async function onLanguageServerReady(
 
     toDispose.push(
         inlineManager,
+        Commands.register('aws.amazonq.showPrev', async () => {
+            await sessionManager.maybeRefreshSessionUx()
+            await vscode.commands.executeCommand('editor.action.inlineSuggest.showPrevious')
+        }),
+        Commands.register('aws.amazonq.showNext', async () => {
+            await sessionManager.maybeRefreshSessionUx()
+            await vscode.commands.executeCommand('editor.action.inlineSuggest.showNext')
+        }),
         Commands.register({ id: 'aws.amazonq.invokeInlineCompletion', autoconnect: true }, async () => {
             await vscode.commands.executeCommand('editor.action.inlineSuggest.trigger')
         }),
